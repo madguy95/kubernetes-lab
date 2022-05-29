@@ -1,0 +1,41 @@
+- hosts: workers
+  become: true
+  gather_facts: true
+  
+  tasks:
+    - name: Copy join command from Ansiblehost to the worker nodes.
+      become: true
+      copy:
+        src: /tmp/kubernetes_join_command
+        dest: /tmp/kubernetes_join_command
+        mode: 0777
+
+    - name: Join the Worker nodes to the cluster.
+      become: true
+      command: sh /tmp/kubernetes_join_command
+      register: joined_or_not.stdout
+
+    - debug:
+       msg: "{{ joined_or_not.stdout }}"
+# ---
+# - hosts: masters
+#   become: yes
+#   gather_facts: false
+#   tasks:
+#     - name: get join command
+#       shell: kubeadm token create --print-join-command
+#       register: join_command_raw
+
+#     - name: set join command
+#       set_fact:
+#         join_command: "{{ join_command_raw.stdout_lines[0] }}"
+
+# - hosts: workers
+#   become: yes
+#   tasks:
+#     - name: join cluster
+#       # Refer https://medium.com/@desfocado/how-to-pass-variables-between-ansible-plays-and-hosts-adcf5dfa7439
+#       shell: "{{ hostvars[groups['masters'][0]]['join_command'] }} >> node_joined.txt"
+#       args:
+#         chdir: $HOME
+#         creates: node_joined.txt

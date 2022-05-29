@@ -1,0 +1,67 @@
+---
+- hosts: masters
+  become: true
+  vars_files:
+    - env_variables
+
+  tasks:
+    - name: Intilizing Kubernetes Cluster
+      shell: kubeadm init --apiserver-advertise-address={{adv_ip}} --pod-network-cidr={{cidr_v}} >> cluster.txt
+      run_once: true
+      args:
+        chdir: $HOME
+        creates: cluster.txt
+
+    - pause: seconds=30
+
+    - name: Create directory for kube config.
+      become: true
+      become_user: "{{kube_user}}"
+      file:
+        path: $HOME/.kube
+        state: directory
+        mode: 0755
+
+    - name: copy admin.conf to user's kube config
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{kube_user}}/.kube/config
+        remote_src: yes
+        owner: "{{kube_user}}"
+
+    - name: install Pod network
+      become: true
+      become_user: "{{kube_user}}"
+      shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_seltup.txt
+      args:
+        chdir: $HOME
+        creates: pod_setup.txt
+    
+    - name: Get the token for joining the worker nodes
+      become: true
+      become_user: kube
+      shell: kubeadm token create  --print-join-command
+      register: kubernetes_join_command
+
+    - name: Print the gateway for each host when defined
+      ansible.builtin.debug:
+        msg: "{{ kubernetes_join_command.stdout }}"
+
+    - name: Copy join command to local file.
+      become: false
+      local_action: copy content="{{ kubernetes_join_command.stdout_lines[0] }}" dest="/tmp/kubernetes_join_command" mode=0777
+
+    - name: Configure kubectl command auto-completion.
+      become: true
+      become_user: kube
+      lineinfile:
+        dest: $HOME/.bashrc
+        line: 'source <(kubectl completion bash)'
+        insertafter: EOF
+    # - name: install Pod network
+    #   become: yes
+    #   become_user: {{kube_user}}
+    #   shell: kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml >> pod_seltup.txt
+    #   args:
+    #     chdir: $HOME
+    #     creates: pod_setup.txt
