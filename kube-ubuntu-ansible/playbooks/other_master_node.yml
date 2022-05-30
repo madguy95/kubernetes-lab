@@ -1,0 +1,26 @@
+---
+- hosts: masters
+  become: yes
+  gather_facts: false
+  tasks:
+    - name: Generate a new certificate key in the working master node
+      shell: kubeadm init phase upload-certs --upload-certs
+      register: cert_key
+
+    - name: Get join command
+      shell: kubeadm token create --print-join-command
+      register: join_command_raw
+
+    - name: Set join command
+      set_fact:
+        join_command: "{{ join_command_raw.stdout_lines[0] }} --control-plane --certificate-key {{ cert_key.stdout_lines[2] }}"
+
+- hosts: other-masters
+  become: yes
+  tasks:
+    - name: Join more control pannel cluster
+      # Refer https://medium.com/@desfocado/how-to-pass-variables-between-ansible-plays-and-hosts-adcf5dfa7439
+      shell: "{{ hostvars[groups['masters'][0]]['join_command'] }} >> node_joined.txt"
+      args:
+        chdir: $HOME
+        creates: node_joined.txt

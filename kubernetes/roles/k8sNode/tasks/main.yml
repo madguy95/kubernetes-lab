@@ -1,0 +1,8 @@
+---
+
+- include: setAdditionalFacts.yml
+- include: packages.yml
+- include: installAndConfigureDocker.yml
+- include: installAndConfigureKubernetes.yml
+- include: joinKubernetesCluster.yml
+  when: not k8s_ca.stat.exists

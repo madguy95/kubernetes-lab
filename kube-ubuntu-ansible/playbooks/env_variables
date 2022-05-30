@@ -1,6 +1,7 @@
 kube_user: kube
-adv_ip: 192.168.88.180
+adv_ip: 10.1.38.180
 cidr_v: 10.244.0.0/16
+keepalived_vip="10.1.38.190"
 
 packages:
 - kubeadm

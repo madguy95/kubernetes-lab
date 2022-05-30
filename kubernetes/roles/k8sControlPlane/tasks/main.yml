@@ -1,0 +1,14 @@
+---
+
+- include: setAdditionalFacts.yml
+- include: packages.yml
+- include: installAndConfigureKeepalived.yml
+- include: installAndConfigureHAProxy.yml
+- include: installAndConfigureDocker.yml
+- include: installAndConfigureKubernetes.yml
+- include: initialiseFirstControlPlaneServer.yml
+  when: server_number == '01' and not k8s_ca.stat.exists
+- include: installAndConfigureCalico.yml
+  when: server_number == '01' and not k8s_ca.stat.exists
+- include: joinAdditionalControlPlaneServer.yml
+  when: server_number != '01' and not k8s_ca.stat.exists
