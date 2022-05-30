@@ -6,7 +6,7 @@
 
 - name: get control plane IP address
   set_fact:
-    k8s_control_plane_ip: "{{ lookup('community.general.dig',  initial_control_plane_fqdn) }}"
+    k8s_control_plane_ip: "{{ vip }}"
 
 - name: check whether node is initialised
   stat:

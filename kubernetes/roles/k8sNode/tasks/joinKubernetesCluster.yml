@@ -6,7 +6,8 @@
     state: directory
 
 - name: obtain join string from kubernetes control plane
-  delegate_to: "{{ k8s_control_plane_ip }}"
+  delegate_to: "{{k8s_control_plane_ip}}"
+  remote_user: vagrant
   ansible.builtin.shell:
     cmd: kubeadm token create --print-join-command --ttl=1h
   register: kubeadm_join_string
@@ -28,7 +29,8 @@
     dest: "/etc/kubernetes/kubeadm-join.stderr"
 
 - name: wait until node is in ready state
-  delegate_to: "{{ k8s_control_plane_ip }}"
+  delegate_to: "{{k8s_control_plane_ip}}"
+  remote_user: vagrant
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
   ansible.builtin.shell:

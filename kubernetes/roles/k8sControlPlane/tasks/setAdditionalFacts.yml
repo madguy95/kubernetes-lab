@@ -1,22 +1,48 @@
 ---
+- name: Add IPs to /etc/hosts on master and workers
+  lineinfile:
+    dest: /etc/hosts
+    regexp: ".*{{ item }}$"
+    line: "{{ hostvars[item].ansible_host }} {{item}}.{{ ansible_facts['domain'] }} {{item}}"
+    state: present
+  when: hostvars[item].ansible_host is defined
+  with_items: "{{ groups.all }}"
 
 - name: determine server number
   set_fact:
     server_number: "{{ ansible_facts['hostname'][-2:] }}"
+
+- debug: 
+    msg: "{{ server_number }}"
 
 - name: determine control plane fqdn
   set_fact:
     initial_control_plane_fqdn: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}.{{ ansible_facts['domain'] }}"
 
 - debug:
-    msg: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}.{{ ansible_facts['domain'] }}"
+    msg: "{{ initial_control_plane_fqdn }}"
 
 - name: get control plane IP address
   set_fact:
-    k8s_control_plane_ip: "{{ lookup('community.general.dig',  initial_control_plane_fqdn) }}"
+    k8s_control_plane_ip: "{{ vip }}"
 
-- debug:
-    msg: "{{ lookup('community.general.dig',  initial_control_plane_fqdn) }}"
+- name: set_fact | figure out network device of private network
+  set_fact:
+    vip_interface: "{{ hostvars[inventory_hostname]['ansible_' + item]['device'] }}"
+  when:
+    - hostvars[inventory_hostname]['ansible_' + item].ipv4 is defined
+    - hostvars[inventory_hostname]['ansible_' + item]['ipv4']['address'] | ipaddr("{{ vip_ipaddr }}")
+  with_items: "{{ ansible_interfaces }}"
+
+- name: debug | print network interface
+  debug:
+    msg: Interface {{ vip_interface | default("not") }} found
+# - name: get control plane IP address
+#   set_fact:
+#     k8s_control_plane_ip: "{{ lookup('dig',  initial_control_plane_fqdn) }}"
+
+# - debug:
+#     msg: "{{ lookup('dig',  initial_control_plane_fqdn) }}"
 
 - name: determine name of initial control plane server
   set_fact:

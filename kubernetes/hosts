@@ -1,9 +1,10 @@
 [k8sControlPlanes]
-master ansible_host=10.1.38.180 ansible_user=vagrant
+kmaster01 ansible_host=192.168.88.181 ansible_user=vagrant
+kmaster02 ansible_host=192.168.88.182 ansible_user=vagrant
 
 [k8sNodes]
-worker1 ansible_host=10.1.38.183 ansible_user=vagrant
-worker2 ansible_host=10.1.38.184 ansible_user=vagrant
+kworker01 ansible_host=192.168.88.191 ansible_user=vagrant
+kworker02 ansible_host=192.168.88.192 ansible_user=vagrant
 
 
 [all:vars]

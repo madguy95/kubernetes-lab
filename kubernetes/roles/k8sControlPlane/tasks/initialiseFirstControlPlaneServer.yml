@@ -4,7 +4,7 @@
   ansible.builtin.shell: |
     kubeadm init \
       --control-plane-endpoint {{ k8s_control_plane_ip }} \
-      --pod-network-cidr=192.168.0.0/24 \
+      --pod-network-cidr={{ cidr_v }} \
   register: kubeadm_init_result
   failed_when: kubeadm_init_result.stdout.find("kubeadm join") == -1
 

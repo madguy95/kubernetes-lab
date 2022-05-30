@@ -1,0 +1,37 @@
+kube_user: kube
+vip: 192.168.88.180
+vip_ipaddr: 192.168.88.0/24
+adv_ip: 10.1.38.180
+cidr_v: 10.244.0.0/16
+keepalived_vip: "10.1.38.190"
+
+packages:
+- kubeadm
+- kubectl
+
+services:
+# - docker
+# - kubelet
+- firewalld
+
+# Based on https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
+# and https://coreos.com/flannel/docs/latest/troubleshooting.html (Firewalls section)
+
+master_ports:
+
+- "6443/tcp" # Kubernetes API server
+- "2379-2380/tcp" # etcd server client API
+- "10250-10252/tcp" # Kubelet API
+- "10259/tcp" # kube-scheduler
+- "10257/tcp" # kube-controller-manager
+- "8285/udp"
+- "8472/udp"
+
+worker_ports:
+
+- "10250/tcp" # Kubelet API
+- "30000-32767/tcp" # NodePort Services†
+- "8285/udp"
+- "8472/udp"
+
+token_file: join_token

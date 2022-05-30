@@ -11,7 +11,7 @@ vrrp_script haproxyIsRunning {
 
 vrrp_instance k8scp {
 	state BACKUP
-	interface {{ ansible_default_ipv4['interface'] }}
+	interface {{ vip_interface }}
 	virtual_router_id 91
 	priority {{ vrrp_priority }}
 	nopreempt
