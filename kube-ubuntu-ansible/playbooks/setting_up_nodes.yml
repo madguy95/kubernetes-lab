@@ -28,6 +28,23 @@
         filename: docker
         mode: 0600
 
+    - name: Create containerd config file
+      file:
+        path: "/etc/modules-load.d/containerd.conf"
+        state: "touch"
+
+    - name: Add conf for containerd
+      blockinfile:
+        path: "/etc/modules-load.d/containerd.conf"
+        block: |
+              overlay
+              br_netfilter
+
+    - name: modprobe
+      shell: |
+              sudo modprobe overlay
+              sudo modprobe br_netfilter
+
     - name: Set system configurations for Kubernetes networking
       file:
         path: "/etc/sysctl.d/99-kubernetes-cri.conf"
@@ -64,18 +81,25 @@
         immediate: yes
       with_items: "{{ master_ports if ('masters' in group_names) else worker_ports }}"
 
-    - name: Install docker and its dependecies
+    #  - name: install containerd
+    #    shell: |
+    #            sudo apt-get update && sudo apt-get install -y containerd
+    #            sudo mkdir -p /etc/containerd
+    #            sudo containerd config default | sudo tee /etc/containerd/config.toml
+    #            sudo systemctl restart containerd
+
+    - name: Install containerd
       apt: 
         name: "{{ packages }}"
         state: present
         update_cache: yes
       vars:
         packages:
-        - docker-ce 
-        - docker-ce-cli 
-        - containerd.io
-      notify:
-        - docker status
+        # - docker-ce 
+        # - docker-ce-cli 
+          - containerd.io
+      # notify:
+      #   - docker status
 
     - name: Remove config.toml
       become: true
@@ -83,15 +107,15 @@
               rm /etc/containerd/config.toml
               systemctl restart containerd   
 
-    - name: Enable service docker, and enable persistently
-      service:
-        name: docker
-        enabled: yes
+    # - name: Enable service docker, and enable persistently
+    #   service:
+    #     name: docker
+    #     enabled: yes
 
-    - name: Add kube user to docker group
-      user:
-        name: "{{kube_user}}"
-        group: docker
+    # - name: Add kube user to docker group
+    #   user:
+    #     name: "{{kube_user}}"
+    #     group: docker
 
     - name: Add Google official GPG key
       apt_key:
@@ -147,3 +171,11 @@
           - kubectl
         state: present
         force: yes
+        
+    - name: Configure kubectl command auto-completion.
+      become: true
+      become_user: kube
+      lineinfile:
+        dest: $HOME/.bashrc
+        line: 'source <(kubectl completion bash)'
+        insertafter: EOF
