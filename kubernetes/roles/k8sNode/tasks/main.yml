@@ -1,7 +1,8 @@
 ---
 
-- include: setAdditionalFacts.yml
+- include: prerequisites.yml
 - include: packages.yml
+- include: setAdditionalFacts.yml
 - include: installAndConfigureDocker.yml
 - include: installAndConfigureKubernetes.yml
 - include: joinKubernetesCluster.yml

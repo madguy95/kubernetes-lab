@@ -31,7 +31,7 @@ defaults
     errorfile 504 /etc/haproxy/errors/504.http
 
 frontend k8s-api
-    bind :6443
+    bind :8443
     mode tcp
     option tcplog
     default_backend k8s-api

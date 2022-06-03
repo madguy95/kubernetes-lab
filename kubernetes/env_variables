@@ -1,7 +1,7 @@
 kube_user: kube
 vip: 192.168.88.180
 vip_ipaddr: 192.168.88.0/24
-adv_ip: 10.1.38.180
+adv_ip: 192.168.88.181
 cidr_v: 10.244.0.0/16
 keepalived_vip: "10.1.38.190"
 
@@ -19,7 +19,15 @@ services:
 
 master_ports:
 
+- "22/tcp"
+- "80/tcp"
+- "443/tcp"
+- "8443/tcp" # haproxy kube api
+- "179/tcp" # calico
+- "4789/udp" # calico
+- "5473/tcp" # calico
 - "6443/tcp" # Kubernetes API server
+- "2376-2377/tcp" # docker
 - "2379-2380/tcp" # etcd server client API
 - "10250-10252/tcp" # Kubelet API
 - "10259/tcp" # kube-scheduler
@@ -29,8 +37,12 @@ master_ports:
 
 worker_ports:
 
-- "10250/tcp" # Kubelet API
-- "30000-32767/tcp" # NodePort Services†
+- "179/tcp" # calico
+- "4789/udp" # calico
+- "5473/tcp" # calico
+- "2376-2377/tcp" # docker
+- "10250-10252/tcp" # Kubelet API
+- "30000-32767/tcp" # NodePort Services
 - "8285/udp"
 - "8472/udp"
 

@@ -1,7 +1,8 @@
 ---
 
-- include: setAdditionalFacts.yml
+- include: prerequisites.yml
 - include: packages.yml
+- include: setAdditionalFacts.yml
 - include: installAndConfigureKeepalived.yml
 - include: installAndConfigureHAProxy.yml
 - include: installAndConfigureDocker.yml

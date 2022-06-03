@@ -1,17 +1,4 @@
 ---
-
-# - name: add docker-ce gpg key
-#   ansible.builtin.shell:
-#     cmd: curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor > /usr/share/keyrings/docker-ce-archive-keyring.gpg
-#     creates: /usr/share/keyrings/docker-ce-archive-keyring.gpg
-#     warn: false
-
-# - name: add docker-ce repository
-#   ansible.builtin.apt_repository:
-#     repo: "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-ce-archive-keyring.gpg] https://download.docker.com/linux/debian {{ ansible_distribution_release }} stable"
-#     state: present
-#     update_cache: yes
-    
 - name: Add Docker’s official GPG key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
@@ -24,7 +11,7 @@
     filename: docker
     mode: 0600
 
-- name: create /etc/docker directory
+- name: Create /etc/docker directory
   ansible.builtin.file:
     path: /etc/docker
     state: directory
@@ -35,38 +22,63 @@
     dest: /etc/docker/daemon.json
   notify: restart docker
 
-- name: Create containerd config file
-  file:
-    path: "/etc/modules-load.d/containerd.conf"
-    state: "touch"
+# - name: Create containerd config file
+#   file:
+#     path: "/etc/modules-load.d/containerd.conf"
+#     state: "touch"
 
-- name: Add conf for containerd
-  blockinfile:
-    path: "/etc/modules-load.d/containerd.conf"
-    block: |
-          overlay
-          br_netfilter
+# - name: Add conf for containerd
+#   blockinfile:
+#     path: "/etc/modules-load.d/containerd.conf"
+#     block: |
+#       overlay
+#       br_netfilter
 
-- name: modprobe
-  shell: |
-          sudo modprobe overlay
-          sudo modprobe br_netfilter
+# - name: modprobe
+#   shell: |
+#     sudo modprobe overlay
+#     sudo modprobe br_netfilter
 
-- name: Set system configurations for Kubernetes networking
-  file:
-    path: "/etc/sysctl.d/99-kubernetes-cri.conf"
-    state: "touch"
+- name: Load br_netfilter kernel module on boot
+  ansible.builtin.copy:
+    src: files/etc/modules-load.d/k8s.conf
+    dest: /etc/modules-load.d/k8s.conf
 
-- name: Add conf for containerd
-  blockinfile:
-    path: "/etc/sysctl.d/99-kubernetes-cri.conf"
-    block: |
-          net.ipv4.ip_forward = 1
-          net.bridge.bridge-nf-call-iptables = 1
-          net.bridge.bridge-nf-call-ip6tables = 1
-    
-- name: Apply new settings
-  command: sudo sysctl --system
+- name: Load br_netfilter kernel module
+  community.general.modprobe:
+    name: "{{module}}"
+    state: present
+  vars:
+    module: "{{item}}"
+  with_items: 
+      - br_netfilter
+      - overlay
+
+- name: Let iptables see bridged traffic
+  ansible.builtin.copy:
+    src: files/etc/sysctl.d/k8s.conf
+    dest: /etc/sysctl.d/k8s.conf
+  register: sysctlConfigured
+
+- name: Apply sysctl changes
+  command: "sysctl --system"
+  when: sysctlConfigured.changed
+
+# - name: Set system configurations for Kubernetes networking
+#   file:
+#     path: "/etc/sysctl.d/99-kubernetes-cri.conf"
+#     state: "touch"
+
+# - name: Add conf for containerd
+#   blockinfile:
+#     path: "/etc/sysctl.d/99-kubernetes-cri.conf"
+#     block: |
+#           net.ipv4.ip_forward = 1
+#           net.bridge.bridge-nf-call-iptables = 1
+#           net.bridge.bridge-nf-call-ip6tables = 1
+
+# - name: Apply new settings
+#   command: sudo sysctl --system
 
 - name: Installing required packages
   apt:
@@ -87,7 +99,7 @@
     immediate: yes
   with_items: "{{ master_ports if ('k8sControlPlanes' in group_names) else worker_ports }}"
 
-- name: install docker community edition
+- name: Install docker community edition
   ansible.builtin.apt:
     name: "{{ packages }}"
     state: present
@@ -95,12 +107,12 @@
     cache_valid_time: 3600
   vars:
     packages:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
 
 - name: Remove config.toml
   become: true
   shell: |
-          rm /etc/containerd/config.toml
-          systemctl restart containerd  
+    rm /etc/containerd/config.toml
+    systemctl restart containerd

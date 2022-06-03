@@ -1,32 +1,21 @@
 ---
-- name: Add IPs to /etc/hosts on master and workers
-  lineinfile:
-    dest: /etc/hosts
-    regexp: ".*{{ item }}$"
-    line: "{{ hostvars[item].ansible_host }} {{item}}.{{ ansible_facts['domain'] }} {{item}}"
-    state: present
-  when: hostvars[item].ansible_host is defined
-  with_items: "{{ groups.all }}"
 
-- name: determine server number
+- name: Determine server number
   set_fact:
     server_number: "{{ ansible_facts['hostname'][-2:] }}"
 
-- debug: 
-    msg: "{{ server_number }}"
+# - name: determine control plane fqdn
+#   set_fact:
+#     initial_control_plane_fqdn: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}.{{ ansible_facts['domain'] }}"
 
-- name: determine control plane fqdn
-  set_fact:
-    initial_control_plane_fqdn: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}.{{ ansible_facts['domain'] }}"
+# - debug:
+#     msg: "{{ initial_control_plane_fqdn }}"
 
-- debug:
-    msg: "{{ initial_control_plane_fqdn }}"
-
-- name: get control plane IP address
+- name: Get control plane IP address
   set_fact:
     k8s_control_plane_ip: "{{ vip }}"
 
-- name: set_fact | figure out network device of private network
+- name: Set_fact | figure out network device of private network
   set_fact:
     vip_interface: "{{ hostvars[inventory_hostname]['ansible_' + item]['device'] }}"
   when:
@@ -34,9 +23,9 @@
     - hostvars[inventory_hostname]['ansible_' + item]['ipv4']['address'] | ipaddr("{{ vip_ipaddr }}")
   with_items: "{{ ansible_interfaces }}"
 
-- name: debug | print network interface
-  debug:
-    msg: Interface {{ vip_interface | default("not") }} found
+# - name: debug | print network interface
+#   debug:
+#     msg: Interface {{ vip_interface | default("not") }} found
 # - name: get control plane IP address
 #   set_fact:
 #     k8s_control_plane_ip: "{{ lookup('dig',  initial_control_plane_fqdn) }}"
@@ -44,15 +33,15 @@
 # - debug:
 #     msg: "{{ lookup('dig',  initial_control_plane_fqdn) }}"
 
-- name: determine name of initial control plane server
+- name: Determine name of initial control plane server
   set_fact:
-    initial_control_plane_server: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}01"
+    initial_control_plane_server: "{{ groups['k8sinitnode'][0] }}"
 
-- name: determine vrrp priority
+- name: Determine vrrp priority
   set_fact:
     vrrp_priority: "{{ 255 - (( server_number|int - 1) * 50) }}"
 
-- name: check whether contol plane is initialised
+- name: Check whether contol plane is initialised
   stat:
     path: /etc/kubernetes/pki/ca.key
   register: k8s_ca

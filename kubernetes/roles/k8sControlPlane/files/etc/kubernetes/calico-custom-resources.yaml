@@ -3,14 +3,14 @@
 apiVersion: operator.tigera.io/v1
 kind: Installation
 metadata:
-  name: default
+  namespace: kube-system
 spec:
   # Configures Calico networking.
   calicoNetwork:
     # Note: The ipPools section cannot be modified post-install.
     ipPools:
     - blockSize: 29
-      cidr: 192.168.0.0/24
+      cidr: 10.244.0.0/24
       encapsulation: VXLANCrossSubnet
       natOutgoing: Enabled
       nodeSelector: all()
@@ -22,6 +22,6 @@ spec:
 apiVersion: operator.tigera.io/v1
 kind: APIServer 
 metadata: 
-  name: default 
+  namespace: kube-system
 spec: {}
 

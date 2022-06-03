@@ -1,6 +1,5 @@
 ---
-
-- name: install prerequisite packages
+- name: Install prerequisite packages
   ansible.builtin.apt:
     name: "{{ packages }}"
     state: present
@@ -8,6 +7,11 @@
     cache_valid_time: 3600
   vars:
     packages:
-    - apt-transport-https
-    - gpg
-    - gpg-agent
+      - gpg
+      - gpg-agent
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg-agent
+      - vim
+      - software-properties-common
