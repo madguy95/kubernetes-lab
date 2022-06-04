@@ -16,28 +16,7 @@
           - curl
           - gnupg-agent
           - software-properties-common
-
-    - name: create Docker config directory
-      file: path=/etc/docker state=directory
-
-    - name: changing Docker to systemd driver
-      blockinfile:
-        create: yes
-        dest: "/etc/docker/daemon.json"
-        block: |
-          {
-            "exec-opts": ["native.cgroupdriver=systemd"]
-          }
-
-    - name: Add an apt signing key for Docker
-      apt_key:
-        url: https://download.docker.com/linux/ubuntu/gpg
-        state: present
-
-    - name: Add apt repository for stable version
-      apt_repository:
-        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
-        state: present
+          - bash-completion
 
     - name: Create containerd config file
       file:
@@ -71,31 +50,14 @@
 
     - name: Apply new settings
       command: sudo sysctl --system
-    - name: Install docker and its dependecies
-      apt:
-        name: "{{ packages }}"
-        state: present
-        update_cache: yes
-      vars:
-        packages:
-          # - docker-ce
-          # - docker-ce-cli
-          - containerd.io
-      # notify:
-      #   - docker status
-
-    # - name: Add vagrant user to docker group
-    #   user:
-    #     name: vagrant
-    #     group: docker
 
     - name: Install containerd
       shell: |
-        sudo apt-get update && sudo apt-get install -y containerd
-        sudo mkdir -p /etc/containerd
-        sudo containerd config default | sudo tee /etc/containerd/config.toml
-        sudo systemctl restart containerd
-
+              sudo apt-get update && sudo apt-get install -y containerd
+              sudo mkdir -p /etc/containerd
+              sudo containerd config default | sudo tee /etc/containerd/config.toml
+              sudo systemctl restart containerd
+              
     - name: Remove swapfile from /etc/fstab
       mount:
         name: "{{ item }}"
@@ -120,32 +82,22 @@
         state: present
         filename: kubernetes.list
 
-    - name: install kubelet
+    - name: Install kubelet
       apt:
         name: kubelet={{kube_ver}}
         state: present
         update_cache: true
 
-    - name: install kubeadm
+    - name: Install kubeadm
       apt:
         name: kubeadm={{kube_ver}}
         state: present
 
-    - name: install kubectl
+    - name: Install kubectl
       apt:
         name: kubectl={{kube_ver}}
         state: present
         force: yes
-    # - name: Install Kubernetes binaries
-    #   apt:
-    #     name: "{{ packages }}"
-    #     state: present
-    #     update_cache: yes
-    #   vars:
-    #     packages:
-    #       - kubelet
-    #       - kubeadm
-    #       - kubectl
 
     - name: Configure node ip
       lineinfile:
@@ -165,6 +117,3 @@
     - name: Join the node to cluster
       command: sh /tmp/join-command.sh
 
-  # handlers:
-  #   - name: docker status
-  #     service: name=docker state=started
