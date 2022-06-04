@@ -1,13 +1,9 @@
 [masters]
-master ansible_host=10.1.38.180 ansible_user=vagrant
-
-[other-masters]
-master02 ansible_host=10.1.38.181 ansible_user=vagrant
-master03 ansible_host=10.1.38.182 ansible_user=vagrant
+kmaster01 ansible_host=192.168.88.181 ansible_user=vagrant
 
 [workers]
-worker1 ansible_host=10.1.38.183 ansible_user=vagrant
-worker2 ansible_host=10.1.38.184 ansible_user=vagrant
+kworker01 ansible_host=192.168.88.191 ansible_user=vagrant
+kworker02 ansible_host=192.168.88.192 ansible_user=vagrant
 
 [all:vars]
 ansible_python_interpreter=/usr/bin/python3

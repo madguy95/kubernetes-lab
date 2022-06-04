@@ -95,9 +95,9 @@
         update_cache: yes
       vars:
         packages:
-        # - docker-ce 
-        # - docker-ce-cli 
-          - containerd.io
+        - docker-ce 
+        - docker-ce-cli 
+        - containerd.io
       # notify:
       #   - docker status
 
@@ -107,15 +107,15 @@
               rm /etc/containerd/config.toml
               systemctl restart containerd   
 
-    # - name: Enable service docker, and enable persistently
-    #   service:
-    #     name: docker
-    #     enabled: yes
+    - name: Enable service docker, and enable persistently
+      service:
+        name: docker
+        enabled: yes
 
-    # - name: Add kube user to docker group
-    #   user:
-    #     name: "{{kube_user}}"
-    #     group: docker
+    - name: Add kube user to docker group
+      user:
+        name: "{{kube_user}}"
+        group: docker
 
     - name: Add Google official GPG key
       apt_key:

@@ -25,13 +25,13 @@
 
 - name: Disable swap
   command: swapoff -a
-  when: ansible_swaptotal_mb > 0
+  # when: ansible_swaptotal_mb > 0
 
 - name: Add IPs to /etc/hosts on master and workers
   lineinfile:
     dest: /etc/hosts
     regexp: ".*{{ item }}$"
-    line: "{{ hostvars[item].ansible_host }} {{item}}.{{ ansible_facts['domain'] }} {{item}}"
+    line: "{{ hostvars[item].ansible_host }} {{item}}"
     state: present
   when: hostvars[item].ansible_host is defined
   with_items: "{{ groups.all }}"

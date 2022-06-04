@@ -37,6 +37,7 @@ master_ports:
 
 worker_ports:
 
+- "22/tcp"
 - "179/tcp" # calico
 - "4789/udp" # calico
 - "5473/tcp" # calico

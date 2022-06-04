@@ -1,9 +1,9 @@
 ---
 
-- name: restart docker
-  systemd:
-    name: docker
-    state: restarted
+# - name: restart docker
+#   systemd:
+#     name: docker
+#     state: restarted
 
 - name: hold k8s packages
   dpkg_selections:
