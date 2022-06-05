@@ -15,3 +15,12 @@
       - gnupg-agent
       - vim
       - software-properties-common
+
+- name: Install the NTP daemon to synchronize the clocks to ms.
+  apt: name=ntp
+
+- name: Make sure ntp is started, and is enabled on restart.
+  service: name=ntp state=started enabled=yes
+
+- name: Set the timezone to the {{host_timezone}} one
+  timezone: "name={{host_timezone}}"

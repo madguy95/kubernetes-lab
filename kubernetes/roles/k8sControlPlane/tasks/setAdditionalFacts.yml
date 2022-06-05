@@ -1,15 +1,7 @@
 ---
-
 - name: Determine server number
   set_fact:
     server_number: "{{ ansible_facts['hostname'][-2:] }}"
-
-# - name: determine control plane fqdn
-#   set_fact:
-#     initial_control_plane_fqdn: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}.{{ ansible_facts['domain'] }}"
-
-# - debug:
-#     msg: "{{ initial_control_plane_fqdn }}"
 
 - name: Get control plane IP address
   set_fact:
@@ -22,16 +14,6 @@
     - hostvars[inventory_hostname]['ansible_' + item].ipv4 is defined
     - hostvars[inventory_hostname]['ansible_' + item]['ipv4']['address'] | ipaddr("{{ vip_ipaddr }}")
   with_items: "{{ ansible_interfaces }}"
-
-# - name: debug | print network interface
-#   debug:
-#     msg: Interface {{ vip_interface | default("not") }} found
-# - name: get control plane IP address
-#   set_fact:
-#     k8s_control_plane_ip: "{{ lookup('dig',  initial_control_plane_fqdn) }}"
-
-# - debug:
-#     msg: "{{ lookup('dig',  initial_control_plane_fqdn) }}"
 
 - name: Determine name of initial control plane server
   set_fact:

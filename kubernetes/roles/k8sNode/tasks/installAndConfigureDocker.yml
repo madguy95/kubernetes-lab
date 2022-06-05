@@ -1,68 +1,43 @@
 ---
-- name: Create containerd config file
+- name: Create /etc/modules-load.d/k8s.conf config file
   file:
-    path: "/etc/modules-load.d/containerd.conf"
+    path: "/etc/modules-load.d/k8s.conf"
     state: "touch"
 
-- name: Add conf for containerd
+- name: Add conf for /etc/modules-load.d/k8s.conf
   blockinfile:
-    path: "/etc/modules-load.d/containerd.conf"
+    path: "/etc/modules-load.d/k8s.conf"
     block: |
       overlay
       br_netfilter
 
-- name: modprobe
+- name: Load overlay, br_netfilter kernel module
   shell: |
     sudo modprobe overlay
     sudo modprobe br_netfilter
 
-# - name: Load br_netfilter kernel module on boot
-#   ansible.builtin.copy:
-#     src: files/etc/modules-load.d/k8s.conf
-#     dest: /etc/modules-load.d/k8s.conf
-
-# - name: Load br_netfilter kernel module
-#   community.general.modprobe:
-#     name: "{{module}}"
-#     state: present
-#   vars:
-#     module: "{{item}}"
-#   with_items: 
-#       - br_netfilter
-#       - overlay
-
-# - name: Let iptables see bridged traffic
-#   ansible.builtin.copy:
-#     src: files/etc/sysctl.d/k8s.conf
-#     dest: /etc/sysctl.d/k8s.conf
-#   register: sysctlConfigured
-
-# - name: Apply sysctl changes
-#   command: "sysctl --system"
-#   when: sysctlConfigured.changed
-
 - name: Set system configurations for Kubernetes networking
   file:
-    path: "/etc/sysctl.d/99-kubernetes-cri.conf"
+    path: "/etc/sysctl.d/k8s.conf"
     state: "touch"
 
-- name: Add conf for containerd
+- name: Let iptables see bridged traffic
   blockinfile:
-    path: "/etc/sysctl.d/99-kubernetes-cri.conf"
+    path: "/etc/sysctl.d/k8s.conf"
     block: |
           net.ipv4.ip_forward = 1
           net.bridge.bridge-nf-call-iptables = 1
           net.bridge.bridge-nf-call-ip6tables = 1
 
-- name: Apply new settings
+- name: Apply sysctl settings
   command: sudo sysctl --system
 
-- name: Installing required packages
+- name: Installing firewalld
   apt:
     name: firewalld
     state: present
 
-- name: Starting and Enabling the required services
+- name: Starting and Enabling the firewalld service
   service:
     name: firewalld
     state: started
@@ -76,25 +51,13 @@
     immediate: yes
   with_items: "{{ master_ports if ('k8sControlPlanes' in group_names) else worker_ports }}"
 
-# - name: Install docker community edition
-#   ansible.builtin.apt:
-#     name: "{{ packages }}"
-#     state: present
-#     update_cache: yes
-#     cache_valid_time: 3600
-#   vars:
-#     packages:
-#       - docker-ce
-#       - docker-ce-cli
-#       - containerd.io
+- name: Allow masquerade in Firewalld
+  ansible.posix.firewalld:
+    masquerade: yes
+    state: enabled
+    permanent: yes
 
-# - name: Remove config.toml
-#   become: true
-#   shell: |
-#     rm /etc/containerd/config.toml
-#     systemctl restart containerd
-
-- name: install containerd
+- name: Install containerd
   shell: |
           sudo apt-get update && sudo apt-get install -y containerd
           sudo mkdir -p /etc/containerd

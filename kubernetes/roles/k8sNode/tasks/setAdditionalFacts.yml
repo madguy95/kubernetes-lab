@@ -1,13 +1,8 @@
 ---
-
-# - name: determine control plane fqdn
-#   set_fact:
-#     initial_control_plane_fqdn: "{{ ansible_facts['hostname'][ : ansible_facts['hostname'] | length - 2 ] }}cp01.{{ ansible_facts['domain'] }}"
-
 - name: Determine name of initial control plane server
   set_fact:
     initial_control_plane_server: "{{ groups['k8sinitnode'][0] }}"
-    
+
 - name: Get control plane IP address
   set_fact:
     k8s_control_plane_ip: "{{ vip }}"

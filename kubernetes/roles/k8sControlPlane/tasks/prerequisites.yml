@@ -1,5 +1,4 @@
 ---
-
 - name: Update apt cache if needed.
   apt: update_cache=yes cache_valid_time=3600
 
@@ -11,7 +10,6 @@
 
 - name: Disable swap
   command: swapoff -a
-  # when: ansible_swaptotal_mb > 0
 
 - name: Add IPs to /etc/hosts on master and workers
   lineinfile:

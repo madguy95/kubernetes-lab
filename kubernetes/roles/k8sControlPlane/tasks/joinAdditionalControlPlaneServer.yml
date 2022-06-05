@@ -1,5 +1,4 @@
 ---
-
 - name: create kubernetes pki directory
   ansible.builtin.file:
     path: /etc/kubernetes/pki/etcd
@@ -32,7 +31,7 @@
   notify: remove local copy of pki certs
 
 - name: copy pki certs/keys to additional control plane server
-  ansible.builtin.copy: 
+  ansible.builtin.copy:
     src: /tmp/pki/{{ item }}
     dest: /etc/kubernetes/pki/{{item}}
   with_items:
@@ -43,7 +42,7 @@
     - front-proxy-ca.crt
     - front-proxy-ca.key
 
-- name: copy etcd pki certs/keys to additional control plane server 
+- name: copy etcd pki certs/keys to additional control plane server
   ansible.builtin.copy:
     src: /tmp/pki/etcd/{{ item }}
     dest: /etc/kubernetes/pki/etcd/{{ item }}
@@ -71,17 +70,6 @@
   ansible.builtin.copy:
     content: "{{ kubeadm_join_result.stderr }}"
     dest: "/etc/kubernetes/kubeadm-join.stderr"
-
-# - name: wait until node is in ready state
-#   environment:
-#     KUBECONFIG: /etc/kubernetes/admin.conf
-#   ansible.builtin.shell:
-#     cmd: |
-#       kubectl get nodes {{ ansible_hostname }} --no-headers -o custom-columns=STATUS:status.conditions\[\?\(\@.type==\"Ready\"\)\].status
-#   register: node_status
-#   until: node_status.stdout == 'True'
-#   delay: 10
-#   retries: 30
 
 - name: create .kube config folder for ansible user
   ansible.builtin.file:

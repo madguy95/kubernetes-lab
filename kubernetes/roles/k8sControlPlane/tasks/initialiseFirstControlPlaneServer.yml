@@ -20,15 +20,6 @@
 
 - pause: seconds=10
 
-# - name: wait until the number of "ready" pods is five
-#   environment:
-#     KUBECONFIG: /etc/kubernetes/admin.conf
-#   ansible.builtin.shell: kubectl get pods --field-selector=status.phase=Running --namespace kube-system --no-headers
-#   register: node_status
-#   until: node_status.stdout_lines | length == 5
-#   delay: 10
-#   retries: 30
-
 - name: Create .kube config folder for ansible user
   ansible.builtin.file:
     path: "~{{ ansible_ssh_user }}/.kube"

@@ -1,6 +1,6 @@
 ---
 
-- name: apply Kubernetes Control Plane configuration to Kubernetes Control Plane servers
+- name: Apply configuration to Kubernetes Control Plane servers
   hosts: k8sControlPlanes
   become: yes
   roles:
@@ -8,7 +8,7 @@
   vars_files:
     - env_variables
 
-- name: apply Kubernetes node configuration to Kubernetes Node servers
+- name: Apply configuration to Kubernetes Node servers
   hosts: k8sNodes
   become: yes
   roles:

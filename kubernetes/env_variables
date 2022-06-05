@@ -1,19 +1,9 @@
-kube_user: kube
-vip: 192.168.88.180
-vip_ipaddr: 192.168.88.0/24
-adv_ip: 192.168.88.181
-cidr_v: 10.244.0.0/16
-keepalived_vip: "10.1.38.190"
-kube_ver: 1.23.0-00
-
-packages:
-- kubeadm
-- kubectl
-
-services:
-# - docker
-# - kubelet
-- firewalld
+host_timezone: Asia/Ho_Chi_Minh
+vip: 192.168.88.180   # instead by vitrual ip of masters nodé
+vip_ipaddr: 192.168.88.0/24 # ip range to find network interface default of master nodes
+adv_ip: 192.168.88.181 # first master node ip
+cidr_v: 10.244.0.0/16 # ip range for pods
+kube_ver: 1.23.0-00  # kube version
 
 # Based on https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
 # and https://coreos.com/flannel/docs/latest/troubleshooting.html (Firewalls section)
@@ -57,9 +47,11 @@ worker_ports:
 - "10250-10252/tcp" # Kubelet API
 - "30000-32767/tcp" # NodePort Services
 - "10251/tcp" # Kubelet API
-- "10255/tcp" # Kubelet API
+- "10255/tcp" # Kubelet API for read only access ưith no authentication
 - "10259/tcp" # kube-scheduler
 - "5543/tcp"
+- "10248-10249/tcp" # kubelet
+- "10256/tcp" # kube-proxy
 - "10257/tcp" # kube-controller-manager
 - "8285/udp"
 - "8472/udp"
