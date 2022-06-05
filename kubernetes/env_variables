@@ -4,6 +4,7 @@ vip_ipaddr: 192.168.88.0/24
 adv_ip: 192.168.88.181
 cidr_v: 10.244.0.0/16
 keepalived_vip: "10.1.38.190"
+kube_ver: 1.23.0-00
 
 packages:
 - kubeadm
@@ -30,7 +31,13 @@ master_ports:
 - "2376-2377/tcp" # docker
 - "2379-2380/tcp" # etcd server client API
 - "10250-10252/tcp" # Kubelet API
+- "30000-32767/tcp" # NodePort Services
+- "10251/tcp" # Kubelet API
+- "10255/tcp" # Kubelet API for read only access ưith no authentication
 - "10259/tcp" # kube-scheduler
+- "5543/tcp"
+- "10248-10249/tcp" # kubelet
+- "10256/tcp" # kube-proxy
 - "10257/tcp" # kube-controller-manager
 - "8285/udp"
 - "8472/udp"
@@ -38,13 +45,24 @@ master_ports:
 worker_ports:
 
 - "22/tcp"
+- "80/tcp"
+- "443/tcp"
+- "8443/tcp" # haproxy kube api
 - "179/tcp" # calico
 - "4789/udp" # calico
 - "5473/tcp" # calico
+- "6443/tcp" # Kubernetes API server
 - "2376-2377/tcp" # docker
+- "2379-2380/tcp" # etcd server client API
 - "10250-10252/tcp" # Kubelet API
 - "30000-32767/tcp" # NodePort Services
+- "10251/tcp" # Kubelet API
+- "10255/tcp" # Kubelet API
+- "10259/tcp" # kube-scheduler
+- "5543/tcp"
+- "10257/tcp" # kube-controller-manager
 - "8285/udp"
 - "8472/udp"
+
 
 token_file: join_token

@@ -20,21 +20,6 @@
 
 - pause: seconds=10
 
-- name: Create directory for kube config.
-  become: true
-  become_user: "{{kube_user}}"
-  file:
-    path: $HOME/.kube
-    state: directory
-    mode: 0755
-
-- name: Copy admin.conf to user's kube config
-  copy:
-    src: /etc/kubernetes/admin.conf
-    dest: /home/{{kube_user}}/.kube/config
-    remote_src: yes
-    owner: "{{kube_user}}"
-
 # - name: wait until the number of "ready" pods is five
 #   environment:
 #     KUBECONFIG: /etc/kubernetes/admin.conf

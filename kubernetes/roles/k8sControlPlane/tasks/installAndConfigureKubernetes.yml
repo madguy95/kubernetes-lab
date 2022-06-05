@@ -32,23 +32,39 @@
     state: present
     update_cache: yes
 
-- name: Install k8s packages kubelet, kubeadm, kubectl
-  ansible.builtin.apt:
-    name: "{{ packages }}"
+- name: Install kubelet
+  apt:
+    name: kubelet={{kube_ver}}
     state: present
-    update_cache: yes
-    cache_valid_time: 3600
-  vars:
-    packages:
-    - kubelet
-    - kubeadm
-    - kubectl
-  notify: hold k8s packages
+    update_cache: true
+
+- name: Install kubeadm
+  apt:
+    name: kubeadm={{kube_ver}}
+    state: present
+
+- name: Install kubectl
+  apt:
+    name: kubectl={{kube_ver}}
+    state: present
+    force: yes
+
+- name: Configure node ip
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ hostvars[inventory_hostname].ansible_host }}
+    create: yes
 
 - name: Enable service kubelet, and enable persistently
   service:
     name: kubelet
     enabled: yes
+
+- name: Restart kubelet
+  service:
+    name: kubelet
+    daemon_reload: yes
+    state: restarted
 
 # - name: Installing Kubectl command line on master.
 #   apt:
@@ -57,10 +73,10 @@
 #     state: present
 #     force: yes
     
-- name: Configure kubectl command auto-completion.
-  become: true
-  become_user: "{{kube_user}}"
-  lineinfile:
-    dest: $HOME/.bashrc
-    line: 'source <(kubectl completion bash)'
-    insertafter: EOF
+# - name: Configure kubectl command auto-completion.
+#   become: true
+#   become_user: "{{ ansible_ssh_user }}"
+#   lineinfile:
+#     dest: $HOME/.bashrc
+#     line: 'source <(kubectl completion bash)'
+#     insertafter: EOF

@@ -37,4 +37,6 @@ DNS https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution
     https://github.com/kelseyhightower/kubernetes-the-hard-way
     https://gitlab.com/biscuit.ninja/ansibleExamples/-/tree/main/kubernetes/roles/k8sControlPlane
     https://www.linuxsysadmins.com/install-kubernetes-cluster-with-ansible/
+
 kubectl set env daemonset/calico-node -n kube-system IP_AUTODETECTION_METHOD=interface=eth1
+kubectl rollout restart -n kube-system deployment/coredns

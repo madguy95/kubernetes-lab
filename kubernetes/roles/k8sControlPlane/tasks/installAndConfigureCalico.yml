@@ -1,8 +1,7 @@
 ---
 - name: Install Pod Calico network
   become: true
-  become_user: "{{kube_user}}"
-  shell: kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml >> pod_seltup.txt
+  shell: kubectl apply -f https://docs.projectcalico.org/v3.23/manifests/calico.yaml >> pod_seltup.txt
   args:
     chdir: $HOME
     creates: pod_setup.txt

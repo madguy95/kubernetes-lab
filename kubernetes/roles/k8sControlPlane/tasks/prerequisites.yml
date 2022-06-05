@@ -3,20 +3,6 @@
 - name: Update apt cache if needed.
   apt: update_cache=yes cache_valid_time=3600
 
-- name: Create the kube user account
-  user: name={{kube_user}} append=yes state=present createhome=yes shell=/bin/bash
-
-- name: Allow '{{kube_user}}' to use sudo without needing a password
-  lineinfile:
-    dest: /etc/sudoers
-    line: '{{kube_user}} ALL=(ALL) NOPASSWD: ALL'
-    validate: 'visudo -cf %s'
-
-- name: Set up authorized keys for the kube user
-  authorized_key: user={{kube_user}} key="{{item}}"
-  with_file:
-    - ~/.ssh/id_rsa.pub
-
 - name: Remove Swap entry from /etc/fstab.
   lineinfile:
     dest: /etc/fstab
